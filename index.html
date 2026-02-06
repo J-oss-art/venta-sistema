@@ -1,0 +1,3627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas Pro | Sistema de Gestión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --radius: 8px;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #F8FAFC;
+            color: var(--gray-800);
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: var(--transition);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-section {
+            padding: 24px 0;
+        }
+
+        .nav-title {
+            padding: 0 24px 12px;
+            color: var(--gray-400);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-list {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 24px;
+            color: var(--gray-300);
+            text-decoration: none;
+            transition: var(--transition);
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: var(--transition);
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        /* Top Header */
+        .top-header {
+            height: var(--header-height);
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            box-shadow: var(--shadow);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .user-menu:hover {
+            background: var(--gray-100);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .content-wrapper {
+            padding: 30px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: var(--secondary);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .table-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary) 0%, #0D966C 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--gray-50);
+        }
+
+        th {
+            padding: 16px 24px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        td {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        tbody tr {
+            transition: var(--transition);
+        }
+
+        tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-warning {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .status-info {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-icon:hover {
+            background: var(--gray-200);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-footer {
+            padding: 24px;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 200px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-wrapper {
+                padding: 20px;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            
+            .header-right {
+                display: none;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1100;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.active {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--secondary);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--info);
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1200;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-500);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--gray-300);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 24px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius);
+            background: white;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .page-btn:hover {
+            background: var(--gray-100);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    Ventas Pro
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">Principal</div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-page="dashboard">
+                            <i class="fas fa-tachometer-alt nav-icon"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="sales">
+                            <i class="fas fa-shopping-cart nav-icon"></i>
+                            Ventas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="customers">
+                            <i class="fas fa-users nav-icon"></i>
+                            Clientes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="products">
+                            <i class="fas fa-box nav-icon"></i>
+                            Productos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="leads">
+                            <i class="fas fa-bullseye nav-icon"></i>
+                            Leads
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">Analítica</div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="reports">
+                            <i class="fas fa-chart-bar nav-icon"></i>
+                            Reportes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="analytics">
+                            <i class="fas fa-chart-pie nav-icon"></i>
+                            Análisis
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Configuración</div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="settings">
+                            <i class="fas fa-cog nav-icon"></i>
+                            Configuración
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="btn-icon mobile-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-menu">
+                        <div class="user-avatar">JP</div>
+                        <div>
+                            <div class="user-name">Juan Pérez</div>
+                            <div class="user-role">Administrador</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-wrapper">
+                <!-- Dashboard Page -->
+                <div class="page active" id="dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Ventas Totales</div>
+                                    <div class="stat-value">$<span id="totalSales">0.00</span></div>
+                                </div>
+                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Cargando...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Nuevos Clientes</div>
+                                    <div class="stat-value" id="totalCustomers">0</div>
+                                </div>
+                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--secondary) 0%, #34D399 100%);">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Cargando...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Leads Activos</div>
+                                    <div class="stat-value" id="totalLeads">0</div>
+                                </div>
+                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--info) 0%, #60A5FA 100%);">
+                                    <i class="fas fa-bullseye"></i>
+                                </div>
+                            </div>
+                            <div class="stat-change negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>Cargando...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Tasa de Conversión</div>
+                                    <div class="stat-value" id="conversionRate">0%</div>
+                                </div>
+                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning) 0%, #FBBF24 100%);">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Ventas Mensuales</h2>
+                            <select class="form-control" style="width: 150px;" id="chartPeriod" onchange="updateDashboardCharts()">
+                                <option value="month">Este Mes</option>
+                                <option value="quarter">Este Trimestre</option>
+                                <option value="year">Este Año</option>
+                            </select>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Ventas por Producto</h2>
+                            <button class="btn btn-secondary" onclick="exportChartAsPDF('salesChart', 'Ventas_Mensuales.pdf')">
+                                <i class="fas fa-download"></i>
+                                Exportar PDF
+                            </button>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="productsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Ventas Recientes</h2>
+                            <button class="btn btn-primary" onclick="openModal('saleModal')">
+                                <i class="fas fa-plus"></i>
+                                Nueva Venta
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Producto</th>
+                                        <th>Monto</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentSalesTable">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <div>No hay ventas registradas</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sales Page -->
+                <div class="page" id="sales">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label class="form-label">Fecha Desde</label>
+                            <input type="date" class="form-control" id="dateFrom">
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Fecha Hasta</label>
+                            <input type="date" class="form-control" id="dateTo">
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Estado</label>
+                            <select class="form-control" id="statusFilter">
+                                <option value="">Todos</option>
+                                <option value="Completada">Completada</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Cancelada">Cancelada</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button class="btn btn-secondary" onclick="applyFilters()">
+                                <i class="fas fa-filter"></i>
+                                Filtrar
+                            </button>
+                            <button class="btn btn-icon" onclick="resetFilters()" style="margin-left: 8px;">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Todas las Ventas</h2>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary" onclick="exportTableToPDF('sales', 'Ventas.pdf')">
+                                    <i class="fas fa-download"></i>
+                                    Exportar PDF
+                                </button>
+                                <button class="btn btn-primary" onclick="openModal('saleModal')">
+                                    <i class="fas fa-plus"></i>
+                                    Nueva Venta
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Producto</th>
+                                        <th>Monto</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesTable">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <div>No hay ventas registradas</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customers Page -->
+                <div class="page" id="customers">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label class="form-label">Estado</label>
+                            <select class="form-control" id="customerStatusFilter">
+                                <option value="">Todos</option>
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" class="form-control" id="customerSearch" placeholder="Nombre o email..." oninput="searchCustomers()">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Clientes</h2>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary" onclick="exportTableToPDF('customers', 'Clientes.pdf')">
+                                    <i class="fas fa-download"></i>
+                                    Exportar PDF
+                                </button>
+                                <button class="btn btn-primary" onclick="openModal('customerModal')">
+                                    <i class="fas fa-plus"></i>
+                                    Nuevo Cliente
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Teléfono</th>
+                                        <th>Estado</th>
+                                        <th>Total Compras</th>
+                                        <th>Última Compra</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customersTable">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <div>No hay clientes registrados</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Page -->
+                <div class="page" id="products">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Productos</h2>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary" onclick="exportTableToPDF('products', 'Productos.pdf')">
+                                    <i class="fas fa-download"></i>
+                                    Exportar PDF
+                                </button>
+                                <button class="btn btn-primary" onclick="openModal('productModal')">
+                                    <i class="fas fa-plus"></i>
+                                    Nuevo Producto
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Stock</th>
+                                        <th>Estado</th>
+                                        <th>Ventas</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTable">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <div>No hay productos registrados</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leads Page -->
+                <div class="page" id="leads">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label class="form-label">Estado</label>
+                            <select class="form-control" id="leadStatusFilter" onchange="filterLeads()">
+                                <option value="">Todos</option>
+                                <option value="Nuevo">Nuevo</option>
+                                <option value="En Progreso">En Progreso</option>
+                                <option value="Calificado">Calificado</option>
+                                <option value="Convertido">Convertido</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Leads</h2>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary" onclick="exportTableToPDF('leads', 'Leads.pdf')">
+                                    <i class="fas fa-download"></i>
+                                    Exportar PDF
+                                </button>
+                                <button class="btn btn-primary" onclick="openModal('leadModal')">
+                                    <i class="fas fa-plus"></i>
+                                    Nuevo Lead
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Empresa</th>
+                                        <th>Estado</th>
+                                        <th>Valor Estimado</th>
+                                        <th>Fuente</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leadsTable">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <div>No hay leads registrados</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Page -->
+                <div class="page" id="reports">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Reporte Mensual</div>
+                                    <div class="stat-value" id="monthlyReport">$0.00</div>
+                                </div>
+                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Actualizar</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Clientes Activos</div>
+                                    <div class="stat-value" id="activeCustomers">0</div>
+                                </div>
+                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--secondary) 0%, #34D399 100%);">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Ver tendencia</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Productos Más Vendidos</div>
+                                    <div class="stat-value" id="topProducts">0</div>
+                                </div>
+                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--info) 0%, #60A5FA 100%);">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Ver ranking</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Reporte de Ventas por Producto</h2>
+                            <button class="btn btn-primary" onclick="generateSalesReportPDF()">
+                                <i class="fas fa-download"></i>
+                                Exportar Reporte Completo
+                            </button>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="reportChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Ventas por Categoría</h2>
+                            <button class="btn btn-secondary" onclick="exportCategoryReport()">
+                                <i class="fas fa-file-excel"></i>
+                                Exportar Categorías
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Categoría</th>
+                                        <th>Total Ventas</th>
+                                        <th>Cantidad</th>
+                                        <th>Promedio</th>
+                                        <th>Tendencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoryTable">
+                                    <tr>
+                                        <td colspan="5" class="empty-state">
+                                            <i class="fas fa-chart-pie"></i>
+                                            <div>Generando reporte...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div class="page" id="analytics">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Análisis de Conversión</h2>
+                            <select class="form-control" style="width: 200px;" id="conversionPeriod" onchange="updateConversionChart()">
+                                <option value="30">Últimos 30 días</option>
+                                <option value="90">Últimos 90 días</option>
+                                <option value="365">Este año</option>
+                            </select>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="conversionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Tendencia de Ventas</h2>
+                            <button class="btn btn-secondary" onclick="exportAnalyticsPDF()">
+                                <i class="fas fa-download"></i>
+                                Exportar Análisis
+                            </button>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Métricas Clave</h2>
+                            <button class="btn btn-primary" onclick="updateMetrics()">
+                                <i class="fas fa-sync-alt"></i>
+                                Actualizar
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Métrica</th>
+                                        <th>Valor Actual</th>
+                                        <th>Objetivo</th>
+                                        <th>Progreso</th>
+                                        <th>Tendencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="metricsTable">
+                                    <tr>
+                                        <td colspan="5" class="empty-state">
+                                            <i class="fas fa-chart-line"></i>
+                                            <div>Cargando métricas...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div class="page" id="settings">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Configuración del Sistema</h2>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">Nombre de la Empresa</label>
+                                <input type="text" class="form-control" value="Ventas Pro" id="companyName">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Moneda</label>
+                                <select class="form-control" id="currency">
+                                    <option value="USD">USD ($)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="MXN">MXN ($)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Zona Horaria</label>
+                                <select class="form-control" id="timezone">
+                                    <option value="America/Mexico_City">Ciudad de México</option>
+                                    <option value="America/New_York">Nueva York</option>
+                                    <option value="Europe/Madrid">Madrid</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Exportar Todos los Datos</label>
+                                <div style="margin-top: 8px;">
+                                    <button class="btn btn-primary" onclick="exportAllData()">
+                                        <i class="fas fa-database"></i>
+                                        Exportar Base de Datos Completa
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="importData()" style="margin-left: 10px;">
+                                        <i class="fas fa-file-import"></i>
+                                        Importar Datos
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top: none; padding: 0;">
+                                <button class="btn btn-primary" onclick="saveSettings()">
+                                    <i class="fas fa-save"></i>
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Sale Modal -->
+    <div class="modal" id="saleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="saleModalTitle">Nueva Venta</h2>
+                <button class="modal-close" onclick="closeModal('saleModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="saleForm">
+                    <div class="form-group">
+                        <label class="form-label">Cliente</label>
+                        <select class="form-control" id="saleCustomer" required>
+                            <option value="">Seleccionar cliente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Producto</label>
+                        <select class="form-control" id="saleProduct" required onchange="updateProductPrice()">
+                            <option value="">Seleccionar producto</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" class="form-control" id="saleQuantity" min="1" value="1" required oninput="calculateSaleTotal()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Precio Unitario</label>
+                            <input type="number" class="form-control" id="salePrice" step="0.01" required oninput="calculateSaleTotal()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total</label>
+                        <input type="text" class="form-control" id="saleTotal" value="$0.00" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control" id="saleStatus" required>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Completada">Completada</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="saleDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notas</label>
+                        <textarea class="form-control" id="saleNotes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('saleModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveSale()">Guardar Venta</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Modal -->
+    <div class="modal" id="customerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="customerModalTitle">Nuevo Cliente</h2>
+                <button class="modal-close" onclick="closeModal('customerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="customerName" placeholder="Juan" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="customerLastName" placeholder="Pérez" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="customerEmail" placeholder="juan@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="customerPhone" placeholder="+34 600 123 456" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Empresa</label>
+                        <input type="text" class="form-control" id="customerCompany" placeholder="Nombre de la empresa">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dirección</label>
+                        <textarea class="form-control" id="customerAddress" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control" id="customerStatus" required>
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('customerModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveCustomer()">Guardar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="productModalTitle">Nuevo Producto</h2>
+                <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <div class="form-group">
+                        <label class="form-label">Nombre del Producto</label>
+                        <input type="text" class="form-control" id="productName" placeholder="Plan Premium" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-control" id="productCategory" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="Suscripciones">Suscripciones</option>
+                            <option value="Software">Software</option>
+                            <option value="Consultoría">Consultoría</option>
+                            <option value="Hardware">Hardware</option>
+                            <option value="Servicios">Servicios</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Precio</label>
+                            <input type="number" class="form-control" id="productPrice" placeholder="2500" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="productStock" placeholder="100" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" id="productDescription" rows="3" placeholder="Descripción del producto"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control" id="productStatus" required>
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('productModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Modal -->
+    <div class="modal" id="leadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="leadModalTitle">Nuevo Lead</h2>
+                <button class="modal-close" onclick="closeModal('leadModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="leadForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="leadName" placeholder="Ana" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="leadLastName" placeholder="Martínez" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="leadEmail" placeholder="ana@empresa.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Empresa</label>
+                        <input type="text" class="form-control" id="leadCompany" placeholder="Tech Solutions" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="leadPhone" placeholder="+34 600 987 654">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Valor Estimado</label>
+                            <input type="number" class="form-control" id="leadValue" placeholder="10000" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fuente</label>
+                            <select class="form-control" id="leadSource" required>
+                                <option value="Web">Web</option>
+                                <option value="Referido">Referido</option>
+                                <option value="Redes Sociales">Redes Sociales</option>
+                                <option value="Evento">Evento</option>
+                                <option value="Correo">Correo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control" id="leadStatus" required>
+                            <option value="Nuevo">Nuevo</option>
+                            <option value="En Progreso">En Progreso</option>
+                            <option value="Calificado">Calificado</option>
+                            <option value="Convertido">Convertido</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notas</label>
+                        <textarea class="form-control" id="leadNotes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('leadModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveLead()">Guardar Lead</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle" style="color: var(--secondary);"></i>
+        <span id="notificationMessage">Operación completada exitosamente</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>Cargando...</div>
+    </div>
+
+    <script>
+        // Variables globales
+        let salesChart, productsChart, reportChart, conversionChart, trendChart;
+        let currentData = {
+            sales: [],
+            customers: [],
+            products: [],
+            leads: []
+        };
+        let currentEditId = null;
+
+        // Datos iniciales de ejemplo
+        const sampleData = {
+            sales: [
+                {
+                    id: 1,
+                    customerId: 1,
+                    productId: 1,
+                    quantity: 1,
+                    price: 2500,
+                    total: 2500,
+                    status: 'Completada',
+                    date: new Date().toISOString().split('T')[0],
+                    notes: 'Venta inicial',
+                    customerName: 'Juan Pérez',
+                    productName: 'Plan Premium'
+                }
+            ],
+            customers: [
+                {
+                    id: 1,
+                    name: 'Juan',
+                    lastName: 'Pérez',
+                    email: 'juan@example.com',
+                    phone: '+34 600 123 456',
+                    company: 'Tech Corp',
+                    address: 'Calle Principal 123',
+                    status: 'Activo',
+                    totalPurchases: 2500,
+                    lastPurchase: new Date().toISOString().split('T')[0]
+                }
+            ],
+            products: [
+                {
+                    id: 1,
+                    name: 'Plan Premium',
+                    category: 'Suscripciones',
+                    price: 2500,
+                    stock: 100,
+                    description: 'Suscripción premium con todas las funciones',
+                    status: 'Activo',
+                    salesCount: 1
+                },
+                {
+                    id: 2,
+                    name: 'Plan Básico',
+                    category: 'Suscripciones',
+                    price: 500,
+                    stock: 200,
+                    description: 'Suscripción básica para pequeñas empresas',
+                    status: 'Activo',
+                    salesCount: 0
+                }
+            ],
+            leads: [
+                {
+                    id: 1,
+                    name: 'Ana',
+                    lastName: 'Martínez',
+                    email: 'ana@empresa.com',
+                    company: 'Tech Solutions',
+                    phone: '+34 600 987 654',
+                    value: 10000,
+                    source: 'Web',
+                    status: 'Nuevo',
+                    notes: 'Interesado en Plan Enterprise',
+                    date: new Date().toISOString().split('T')[0]
+                }
+            ]
+        };
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+
+        function initApp() {
+            loadData();
+            setupEventListeners();
+            setupCharts();
+            refreshAllData();
+            
+            // Configurar fecha por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('saleDate').value = today;
+            document.getElementById('dateFrom').value = getFirstDayOfMonth();
+            document.getElementById('dateTo').value = today;
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('ventasProData');
+            if (savedData) {
+                currentData = JSON.parse(savedData);
+            } else {
+                currentData = JSON.parse(JSON.stringify(sampleData));
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('ventasProData', JSON.stringify(currentData));
+        }
+
+        function setupEventListeners() {
+            // Navegación
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navigateTo(this.dataset.page);
+                });
+            });
+
+            // Menú móvil
+            document.querySelector('.mobile-toggle').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('active');
+            });
+
+            // Cerrar sidebar en móvil
+            document.addEventListener('click', function(e) {
+                const sidebar = document.querySelector('.sidebar');
+                if (window.innerWidth < 1024 && 
+                    sidebar.classList.contains('active') && 
+                    !sidebar.contains(e.target) && 
+                    !e.target.classList.contains('mobile-toggle')) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        }
+
+        function navigateTo(page) {
+            // Actualizar navegación
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`.nav-link[data-page="${page}"]`).classList.add('active');
+            
+            // Mostrar página
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page).classList.add('active');
+            
+            // Actualizar título
+            const pageTitle = document.querySelector(`.nav-link[data-page="${page}"]`).textContent.trim();
+            document.getElementById('pageTitle').textContent = pageTitle;
+            
+            // Actualizar datos específicos de la página
+            switch(page) {
+                case 'dashboard':
+                    updateDashboardCharts();
+                    break;
+                case 'sales':
+                    loadSalesTable();
+                    break;
+                case 'customers':
+                    loadCustomersTable();
+                    break;
+                case 'products':
+                    loadProductsTable();
+                    break;
+                case 'leads':
+                    loadLeadsTable();
+                    break;
+                case 'reports':
+                    updateReports();
+                    break;
+                case 'analytics':
+                    updateAnalytics();
+                    break;
+            }
+        }
+
+        function setupCharts() {
+            // Gráfico de ventas mensuales
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Ventas ($)',
+                        data: [],
+                        borderColor: 'rgb(79, 70, 229)',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de productos
+            const productsCtx = document.getElementById('productsChart').getContext('2d');
+            productsChart = new Chart(productsCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Ventas por Producto',
+                        data: [],
+                        backgroundColor: [
+                            'rgba(79, 70, 229, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(79, 70, 229)',
+                            'rgb(16, 185, 129)',
+                            'rgb(59, 130, 246)',
+                            'rgb(245, 158, 11)',
+                            'rgb(239, 68, 68)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de reportes
+            const reportCtx = document.getElementById('reportChart').getContext('2d');
+            reportChart = new Chart(reportCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            'rgba(79, 70, 229, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de conversión
+            const conversionCtx = document.getElementById('conversionChart').getContext('2d');
+            conversionChart = new Chart(conversionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Leads Nuevos', 'En Progreso', 'Calificados', 'Convertidos'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(79, 70, 229, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de tendencias
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Ventas',
+                            data: [],
+                            borderColor: 'rgb(79, 70, 229)',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderWidth: 2,
+                            fill: true
+                        },
+                        {
+                            label: 'Clientes',
+                            data: [],
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // FUNCIONES DE GESTIÓN DE DATOS
+        // ============================================
+
+        function refreshAllData() {
+            updateDashboardStats();
+            updateDashboardCharts();
+            loadSalesTable();
+            loadCustomersTable();
+            loadProductsTable();
+            loadLeadsTable();
+            loadRecentSales();
+            updateSelectOptions();
+        }
+
+        function updateDashboardStats() {
+            const totalSales = currentData.sales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalCustomers = currentData.customers.length;
+            const totalLeads = currentData.leads.length;
+            const convertedLeads = currentData.leads.filter(lead => lead.status === 'Convertido').length;
+            const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+
+            document.getElementById('totalSales').textContent = totalSales.toLocaleString('es-ES', { minimumFractionDigits: 2 });
+            document.getElementById('totalCustomers').textContent = totalCustomers;
+            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('conversionRate').textContent = `${conversionRate}%`;
+
+            // Actualizar cambios
+            document.querySelectorAll('.stat-change').forEach(change => {
+                change.innerHTML = '<i class="fas fa-arrow-up"></i><span>Actualizado</span>';
+            });
+        }
+
+        function updateDashboardCharts() {
+            const period = document.getElementById('chartPeriod').value;
+            updateSalesChart(period);
+            updateProductsChart();
+        }
+
+        function updateSalesChart(period) {
+            const salesData = getSalesDataByPeriod(period);
+            
+            salesChart.data.labels = salesData.labels;
+            salesChart.data.datasets[0].data = salesData.data;
+            salesChart.update();
+        }
+
+        function updateProductsChart() {
+            const productSales = {};
+            
+            currentData.sales.forEach(sale => {
+                const product = currentData.products.find(p => p.id === sale.productId);
+                if (product) {
+                    if (!productSales[product.name]) {
+                        productSales[product.name] = 0;
+                    }
+                    productSales[product.name] += sale.total;
+                }
+            });
+
+            const labels = Object.keys(productSales);
+            const data = Object.values(productSales);
+
+            productsChart.data.labels = labels;
+            productsChart.data.datasets[0].data = data;
+            productsChart.update();
+        }
+
+        function getSalesDataByPeriod(period) {
+            const now = new Date();
+            let labels = [];
+            let data = [];
+
+            if (period === 'month') {
+                // Últimos 30 días
+                for (let i = 29; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(now.getDate() - i);
+                    labels.push(date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }));
+                    
+                    const dateStr = date.toISOString().split('T')[0];
+                    const dailySales = currentData.sales
+                        .filter(sale => sale.date === dateStr)
+                        .reduce((sum, sale) => sum + sale.total, 0);
+                    data.push(dailySales);
+                }
+            } else if (period === 'quarter') {
+                // Últimos 3 meses
+                for (let i = 2; i >= 0; i--) {
+                    const date = new Date();
+                    date.setMonth(now.getMonth() - i);
+                    labels.push(date.toLocaleDateString('es-ES', { month: 'long' }));
+                    
+                    const month = date.getMonth() + 1;
+                    const year = date.getFullYear();
+                    const monthlySales = currentData.sales
+                        .filter(sale => {
+                            const saleDate = new Date(sale.date);
+                            return saleDate.getMonth() + 1 === month && saleDate.getFullYear() === year;
+                        })
+                        .reduce((sum, sale) => sum + sale.total, 0);
+                    data.push(monthlySales);
+                }
+            } else {
+                // Últimos 12 meses
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date();
+                    date.setMonth(now.getMonth() - i);
+                    labels.push(date.toLocaleDateString('es-ES', { month: 'short' }));
+                    
+                    const month = date.getMonth() + 1;
+                    const year = date.getFullYear();
+                    const monthlySales = currentData.sales
+                        .filter(sale => {
+                            const saleDate = new Date(sale.date);
+                            return saleDate.getMonth() + 1 === month && saleDate.getFullYear() === year;
+                        })
+                        .reduce((sum, sale) => sum + sale.total, 0);
+                    data.push(monthlySales);
+                }
+            }
+
+            return { labels, data };
+        }
+
+        // ============================================
+        // FUNCIONES DE TABLAS
+        // ============================================
+
+        function loadSalesTable() {
+            const table = document.getElementById('salesTable');
+            const filterStatus = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+
+            let filteredSales = currentData.sales;
+
+            if (filterStatus) {
+                filteredSales = filteredSales.filter(sale => sale.status === filterStatus);
+            }
+
+            if (dateFrom && dateTo) {
+                filteredSales = filteredSales.filter(sale => sale.date >= dateFrom && sale.date <= dateTo);
+            }
+
+            renderTable(table, filteredSales, 'sales');
+        }
+
+        function loadRecentSales() {
+            const table = document.getElementById('recentSalesTable');
+            const recentSales = [...currentData.sales]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+            
+            renderTable(table, recentSales, 'sales');
+        }
+
+        function loadCustomersTable() {
+            const table = document.getElementById('customersTable');
+            const filterStatus = document.getElementById('customerStatusFilter').value;
+            const search = document.getElementById('customerSearch').value.toLowerCase();
+
+            let filteredCustomers = currentData.customers;
+
+            if (filterStatus) {
+                filteredCustomers = filteredCustomers.filter(customer => customer.status === filterStatus);
+            }
+
+            if (search) {
+                filteredCustomers = filteredCustomers.filter(customer => 
+                    customer.name.toLowerCase().includes(search) ||
+                    customer.lastName.toLowerCase().includes(search) ||
+                    customer.email.toLowerCase().includes(search) ||
+                    customer.company?.toLowerCase().includes(search)
+                );
+            }
+
+            renderTable(table, filteredCustomers, 'customers');
+        }
+
+        function loadProductsTable() {
+            const table = document.getElementById('productsTable');
+            renderTable(table, currentData.products, 'products');
+        }
+
+        function loadLeadsTable() {
+            const table = document.getElementById('leadsTable');
+            const filterStatus = document.getElementById('leadStatusFilter').value;
+
+            let filteredLeads = currentData.leads;
+
+            if (filterStatus) {
+                filteredLeads = filteredLeads.filter(lead => lead.status === filterStatus);
+            }
+
+            renderTable(table, filteredLeads, 'leads');
+        }
+
+        function renderTable(table, data, type) {
+            if (data.length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="${type === 'sales' ? 7 : type === 'customers' ? 7 : type === 'products' ? 7 : 7}" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <div>No hay datos disponibles</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            table.innerHTML = data.map(item => {
+                switch(type) {
+                    case 'sales':
+                        return `
+                            <tr>
+                                <td>#${item.id.toString().padStart(3, '0')}</td>
+                                <td>${item.customerName}</td>
+                                <td>${item.productName}</td>
+                                <td>$${item.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</td>
+                                <td><span class="status-badge ${getStatusClass(item.status)}">${item.status}</span></td>
+                                <td>${formatDate(item.date)}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon" onclick="editSale(${item.id})" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon" onclick="deleteSale(${item.id})" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn-icon" onclick="generateSaleReceipt(${item.id})" title="Recibo">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    case 'customers':
+                        return `
+                            <tr>
+                                <td>${item.name} ${item.lastName}</td>
+                                <td>${item.email}</td>
+                                <td>${item.phone}</td>
+                                <td><span class="status-badge ${getStatusClass(item.status)}">${item.status}</span></td>
+                                <td>$${item.totalPurchases.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</td>
+                                <td>${formatDate(item.lastPurchase)}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon" onclick="editCustomer(${item.id})" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon" onclick="deleteCustomer(${item.id})" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    case 'products':
+                        return `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>${item.category}</td>
+                                <td>$${item.price.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</td>
+                                <td>${item.stock}</td>
+                                <td><span class="status-badge ${getStatusClass(item.status)}">${item.status}</span></td>
+                                <td>${item.salesCount || 0}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon" onclick="editProduct(${item.id})" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon" onclick="deleteProduct(${item.id})" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    case 'leads':
+                        return `
+                            <tr>
+                                <td>${item.name} ${item.lastName}</td>
+                                <td>${item.email}</td>
+                                <td>${item.company}</td>
+                                <td><span class="status-badge ${getStatusClass(item.status)}">${item.status}</span></td>
+                                <td>$${item.value.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</td>
+                                <td>${item.source}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon" onclick="editLead(${item.id})" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon" onclick="deleteLead(${item.id})" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        ${item.status !== 'Convertido' ? `
+                                            <button class="btn-icon" onclick="convertLead(${item.id})" title="Convertir a cliente">
+                                                <i class="fas fa-user-plus"></i>
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                }
+            }).join('');
+        }
+
+        // ============================================
+        // FUNCIONES CRUD
+        // ============================================
+
+        function openModal(modalId, editId = null, type = null) {
+            currentEditId = editId;
+            
+            if (modalId === 'saleModal') {
+                if (editId) {
+                    document.getElementById('saleModalTitle').textContent = 'Editar Venta';
+                    const sale = currentData.sales.find(s => s.id === editId);
+                    if (sale) {
+                        document.getElementById('saleCustomer').value = sale.customerId;
+                        document.getElementById('saleProduct').value = sale.productId;
+                        document.getElementById('saleQuantity').value = sale.quantity;
+                        document.getElementById('salePrice').value = sale.price;
+                        document.getElementById('saleStatus').value = sale.status;
+                        document.getElementById('saleDate').value = sale.date;
+                        document.getElementById('saleNotes').value = sale.notes || '';
+                        calculateSaleTotal();
+                    }
+                } else {
+                    document.getElementById('saleModalTitle').textContent = 'Nueva Venta';
+                    resetSaleForm();
+                }
+                updateSelectOptions();
+            }
+            
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            currentEditId = null;
+        }
+
+        function updateSelectOptions() {
+            // Actualizar opciones de clientes
+            const customerSelect = document.getElementById('saleCustomer');
+            customerSelect.innerHTML = '<option value="">Seleccionar cliente</option>';
+            currentData.customers.forEach(customer => {
+                customerSelect.innerHTML += `<option value="${customer.id}">${customer.name} ${customer.lastName}</option>`;
+            });
+
+            // Actualizar opciones de productos
+            const productSelect = document.getElementById('saleProduct');
+            productSelect.innerHTML = '<option value="">Seleccionar producto</option>';
+            currentData.products.forEach(product => {
+                productSelect.innerHTML += `<option value="${product.id}" data-price="${product.price}">${product.name} - $${product.price.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</option>`;
+            });
+        }
+
+        function updateProductPrice() {
+            const productSelect = document.getElementById('saleProduct');
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const price = selectedOption.getAttribute('data-price');
+            
+            if (price) {
+                document.getElementById('salePrice').value = price;
+                calculateSaleTotal();
+            }
+        }
+
+        function calculateSaleTotal() {
+            const quantity = parseFloat(document.getElementById('saleQuantity').value) || 0;
+            const price = parseFloat(document.getElementById('salePrice').value) || 0;
+            const total = quantity * price;
+            document.getElementById('saleTotal').value = `$${total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`;
+        }
+
+        function resetSaleForm() {
+            document.getElementById('saleForm').reset();
+            document.getElementById('saleDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('saleQuantity').value = 1;
+            document.getElementById('saleTotal').value = '$0.00';
+        }
+
+        function saveSale() {
+            const customerId = parseInt(document.getElementById('saleCustomer').value);
+            const productId = parseInt(document.getElementById('saleProduct').value);
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            const price = parseFloat(document.getElementById('salePrice').value);
+            const status = document.getElementById('saleStatus').value;
+            const date = document.getElementById('saleDate').value;
+            const notes = document.getElementById('saleNotes').value;
+            const total = parseFloat(document.getElementById('saleTotal').value.replace('$', '').replace(',', ''));
+
+            if (!customerId || !productId || !quantity || !price || !date) {
+                showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
+
+            const customer = currentData.customers.find(c => c.id === customerId);
+            const product = currentData.products.find(p => p.id === productId);
+
+            if (!customer || !product) {
+                showNotification('Cliente o producto no encontrado', 'error');
+                return;
+            }
+
+            const saleData = {
+                id: currentEditId || generateId('sales'),
+                customerId,
+                productId,
+                quantity,
+                price,
+                total,
+                status,
+                date,
+                notes,
+                customerName: `${customer.name} ${customer.lastName}`,
+                productName: product.name
+            };
+
+            if (currentEditId) {
+                const index = currentData.sales.findIndex(s => s.id === currentEditId);
+                if (index !== -1) {
+                    currentData.sales[index] = saleData;
+                }
+            } else {
+                currentData.sales.unshift(saleData);
+                
+                // Actualizar contador de ventas del producto
+                const productIndex = currentData.products.findIndex(p => p.id === productId);
+                if (productIndex !== -1) {
+                    currentData.products[productIndex].salesCount = (currentData.products[productIndex].salesCount || 0) + 1;
+                }
+
+                // Actualizar cliente
+                const customerIndex = currentData.customers.findIndex(c => c.id === customerId);
+                if (customerIndex !== -1) {
+                    currentData.customers[customerIndex].totalPurchases = (currentData.customers[customerIndex].totalPurchases || 0) + total;
+                    currentData.customers[customerIndex].lastPurchase = date;
+                }
+            }
+
+            saveData();
+            closeModal('saleModal');
+            refreshAllData();
+            showNotification(`Venta ${currentEditId ? 'actualizada' : 'creada'} exitosamente`);
+        }
+
+        function saveCustomer() {
+            const name = document.getElementById('customerName').value.trim();
+            const lastName = document.getElementById('customerLastName').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const company = document.getElementById('customerCompany').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            const status = document.getElementById('customerStatus').value;
+
+            if (!name || !lastName || !email || !phone) {
+                showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
+
+            const customerData = {
+                id: currentEditId || generateId('customers'),
+                name,
+                lastName,
+                email,
+                phone,
+                company,
+                address,
+                status,
+                totalPurchases: 0,
+                lastPurchase: null
+            };
+
+            if (currentEditId) {
+                const index = currentData.customers.findIndex(c => c.id === currentEditId);
+                if (index !== -1) {
+                    // Mantener los datos existentes
+                    customerData.totalPurchases = currentData.customers[index].totalPurchases;
+                    customerData.lastPurchase = currentData.customers[index].lastPurchase;
+                    currentData.customers[index] = customerData;
+                }
+            } else {
+                currentData.customers.unshift(customerData);
+            }
+
+            saveData();
+            closeModal('customerModal');
+            refreshAllData();
+            showNotification(`Cliente ${currentEditId ? 'actualizado' : 'creado'} exitosamente`);
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+            const description = document.getElementById('productDescription').value.trim();
+            const status = document.getElementById('productStatus').value;
+
+            if (!name || !category || !price || !stock) {
+                showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
+
+            const productData = {
+                id: currentEditId || generateId('products'),
+                name,
+                category,
+                price,
+                stock,
+                description,
+                status,
+                salesCount: 0
+            };
+
+            if (currentEditId) {
+                const index = currentData.products.findIndex(p => p.id === currentEditId);
+                if (index !== -1) {
+                    // Mantener el contador de ventas
+                    productData.salesCount = currentData.products[index].salesCount || 0;
+                    currentData.products[index] = productData;
+                }
+            } else {
+                currentData.products.unshift(productData);
+            }
+
+            saveData();
+            closeModal('productModal');
+            refreshAllData();
+            showNotification(`Producto ${currentEditId ? 'actualizado' : 'creado'} exitosamente`);
+        }
+
+        function saveLead() {
+            const name = document.getElementById('leadName').value.trim();
+            const lastName = document.getElementById('leadLastName').value.trim();
+            const email = document.getElementById('leadEmail').value.trim();
+            const company = document.getElementById('leadCompany').value.trim();
+            const phone = document.getElementById('leadPhone').value.trim();
+            const value = parseFloat(document.getElementById('leadValue').value);
+            const source = document.getElementById('leadSource').value;
+            const status = document.getElementById('leadStatus').value;
+            const notes = document.getElementById('leadNotes').value.trim();
+
+            if (!name || !lastName || !email || !company || !value) {
+                showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
+
+            const leadData = {
+                id: currentEditId || generateId('leads'),
+                name,
+                lastName,
+                email,
+                company,
+                phone,
+                value,
+                source,
+                status,
+                notes,
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            if (currentEditId) {
+                const index = currentData.leads.findIndex(l => l.id === currentEditId);
+                if (index !== -1) {
+                    currentData.leads[index] = leadData;
+                }
+            } else {
+                currentData.leads.unshift(leadData);
+            }
+
+            saveData();
+            closeModal('leadModal');
+            refreshAllData();
+            showNotification(`Lead ${currentEditId ? 'actualizado' : 'creado'} exitosamente`);
+        }
+
+        function editSale(id) {
+            openModal('saleModal', id);
+        }
+
+        function editCustomer(id) {
+            const customer = currentData.customers.find(c => c.id === id);
+            if (customer) {
+                document.getElementById('customerName').value = customer.name;
+                document.getElementById('customerLastName').value = customer.lastName;
+                document.getElementById('customerEmail').value = customer.email;
+                document.getElementById('customerPhone').value = customer.phone;
+                document.getElementById('customerCompany').value = customer.company || '';
+                document.getElementById('customerAddress').value = customer.address || '';
+                document.getElementById('customerStatus').value = customer.status;
+                document.getElementById('customerModalTitle').textContent = 'Editar Cliente';
+                currentEditId = id;
+                openModal('customerModal');
+            }
+        }
+
+        function editProduct(id) {
+            const product = currentData.products.find(p => p.id === id);
+            if (product) {
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productCategory').value = product.category;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productStock').value = product.stock;
+                document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productStatus').value = product.status;
+                document.getElementById('productModalTitle').textContent = 'Editar Producto';
+                currentEditId = id;
+                openModal('productModal');
+            }
+        }
+
+        function editLead(id) {
+            const lead = currentData.leads.find(l => l.id === id);
+            if (lead) {
+                document.getElementById('leadName').value = lead.name;
+                document.getElementById('leadLastName').value = lead.lastName;
+                document.getElementById('leadEmail').value = lead.email;
+                document.getElementById('leadCompany').value = lead.company;
+                document.getElementById('leadPhone').value = lead.phone || '';
+                document.getElementById('leadValue').value = lead.value;
+                document.getElementById('leadSource').value = lead.source;
+                document.getElementById('leadStatus').value = lead.status;
+                document.getElementById('leadNotes').value = lead.notes || '';
+                document.getElementById('leadModalTitle').textContent = 'Editar Lead';
+                currentEditId = id;
+                openModal('leadModal');
+            }
+        }
+
+        function deleteSale(id) {
+            if (confirm('¿Está seguro de eliminar esta venta?')) {
+                currentData.sales = currentData.sales.filter(sale => sale.id !== id);
+                saveData();
+                refreshAllData();
+                showNotification('Venta eliminada exitosamente');
+            }
+        }
+
+        function deleteCustomer(id) {
+            if (confirm('¿Está seguro de eliminar este cliente?')) {
+                // Verificar si el cliente tiene ventas
+                const hasSales = currentData.sales.some(sale => sale.customerId === id);
+                if (hasSales) {
+                    if (!confirm('Este cliente tiene ventas registradas. ¿Desea eliminar también las ventas asociadas?')) {
+                        return;
+                    }
+                    // Eliminar ventas asociadas
+                    currentData.sales = currentData.sales.filter(sale => sale.customerId !== id);
+                }
+                
+                currentData.customers = currentData.customers.filter(customer => customer.id !== id);
+                saveData();
+                refreshAllData();
+                showNotification('Cliente eliminado exitosamente');
+            }
+        }
+
+        function deleteProduct(id) {
+            if (confirm('¿Está seguro de eliminar este producto?')) {
+                // Verificar si el producto tiene ventas
+                const hasSales = currentData.sales.some(sale => sale.productId === id);
+                if (hasSales) {
+                    if (!confirm('Este producto tiene ventas registradas. ¿Desea continuar?')) {
+                        return;
+                    }
+                }
+                
+                currentData.products = currentData.products.filter(product => product.id !== id);
+                saveData();
+                refreshAllData();
+                showNotification('Producto eliminado exitosamente');
+            }
+        }
+
+        function deleteLead(id) {
+            if (confirm('¿Está seguro de eliminar este lead?')) {
+                currentData.leads = currentData.leads.filter(lead => lead.id !== id);
+                saveData();
+                refreshAllData();
+                showNotification('Lead eliminado exitosamente');
+            }
+        }
+
+        function convertLead(id) {
+            const lead = currentData.leads.find(l => l.id === id);
+            if (!lead) return;
+
+            if (confirm('¿Convertir este lead en cliente?')) {
+                const newCustomer = {
+                    id: generateId('customers'),
+                    name: lead.name,
+                    lastName: lead.lastName,
+                    email: lead.email,
+                    phone: lead.phone || 'Sin teléfono',
+                    company: lead.company,
+                    address: '',
+                    status: 'Activo',
+                    totalPurchases: 0,
+                    lastPurchase: null
+                };
+
+                lead.status = 'Convertido';
+                currentData.customers.unshift(newCustomer);
+
+                saveData();
+                refreshAllData();
+                showNotification('Lead convertido a cliente exitosamente');
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE REPORTES Y ANÁLISIS
+        // ============================================
+
+        function updateReports() {
+            // Actualizar estadísticas de reportes
+            const monthlySales = currentData.sales
+                .filter(sale => {
+                    const saleDate = new Date(sale.date);
+                    const now = new Date();
+                    return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+                })
+                .reduce((sum, sale) => sum + sale.total, 0);
+
+            const activeCustomers = currentData.customers.filter(c => c.status === 'Activo').length;
+            const topProducts = currentData.products.length;
+
+            document.getElementById('monthlyReport').textContent = `$${monthlySales.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`;
+            document.getElementById('activeCustomers').textContent = activeCustomers;
+            document.getElementById('topProducts').textContent = topProducts;
+
+            // Actualizar gráfico de reportes
+            updateReportChart();
+            
+            // Actualizar tabla de categorías
+            updateCategoryTable();
+        }
+
+        function updateReportChart() {
+            const categories = {};
+            
+            currentData.sales.forEach(sale => {
+                const product = currentData.products.find(p => p.id === sale.productId);
+                if (product) {
+                    if (!categories[product.category]) {
+                        categories[product.category] = 0;
+                    }
+                    categories[product.category] += sale.total;
+                }
+            });
+
+            const labels = Object.keys(categories);
+            const data = Object.values(categories);
+
+            reportChart.data.labels = labels;
+            reportChart.data.datasets[0].data = data;
+            reportChart.update();
+        }
+
+        function updateCategoryTable() {
+            const table = document.getElementById('categoryTable');
+            const categories = {};
+            
+            currentData.sales.forEach(sale => {
+                const product = currentData.products.find(p => p.id === sale.productId);
+                if (product) {
+                    if (!categories[product.category]) {
+                        categories[product.category] = {
+                            total: 0,
+                            count: 0,
+                            sales: []
+                        };
+                    }
+                    categories[product.category].total += sale.total;
+                    categories[product.category].count++;
+                    categories[product.category].sales.push(sale);
+                }
+            });
+
+            if (Object.keys(categories).length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i class="fas fa-chart-pie"></i>
+                            <div>No hay datos de categorías</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            table.innerHTML = Object.entries(categories).map(([category, data]) => {
+                const average = data.count > 0 ? data.total / data.count : 0;
+                const trend = getCategoryTrend(data.sales);
+                
+                return `
+                    <tr>
+                        <td>${category}</td>
+                        <td>$${data.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</td>
+                        <td>${data.count}</td>
+                        <td>$${average.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</td>
+                        <td class="${trend >= 0 ? 'positive' : 'negative'}">
+                            <i class="fas fa-arrow-${trend >= 0 ? 'up' : 'down'}"></i>
+                            ${Math.abs(trend)}%
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateAnalytics() {
+            updateConversionChart();
+            updateTrendChart();
+            updateMetricsTable();
+        }
+
+        function updateConversionChart() {
+            const period = parseInt(document.getElementById('conversionPeriod').value);
+            const leadsByStatus = {
+                'Nuevo': 0,
+                'En Progreso': 0,
+                'Calificado': 0,
+                'Convertido': 0
+            };
+
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - period);
+
+            currentData.leads.forEach(lead => {
+                const leadDate = new Date(lead.date);
+                if (leadDate >= cutoffDate) {
+                    leadsByStatus[lead.status]++;
+                }
+            });
+
+            conversionChart.data.datasets[0].data = [
+                leadsByStatus['Nuevo'],
+                leadsByStatus['En Progreso'],
+                leadsByStatus['Calificado'],
+                leadsByStatus['Convertido']
+            ];
+            conversionChart.update();
+        }
+
+        function updateTrendChart() {
+            const months = 6;
+            const labels = [];
+            const salesData = [];
+            const customersData = [];
+
+            for (let i = months - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                labels.push(date.toLocaleDateString('es-ES', { month: 'short' }));
+
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+
+                const monthlySales = currentData.sales
+                    .filter(sale => {
+                        const saleDate = new Date(sale.date);
+                        return saleDate.getMonth() + 1 === month && saleDate.getFullYear() === year;
+                    })
+                    .reduce((sum, sale) => sum + sale.total, 0);
+
+                const monthlyCustomers = currentData.customers
+                    .filter(customer => {
+                        const customerDate = new Date(customer.lastPurchase || customer.date);
+                        return customerDate.getMonth() + 1 === month && customerDate.getFullYear() === year;
+                    })
+                    .length;
+
+                salesData.push(monthlySales);
+                customersData.push(monthlyCustomers);
+            }
+
+            trendChart.data.labels = labels;
+            trendChart.data.datasets[0].data = salesData;
+            trendChart.data.datasets[1].data = customersData;
+            trendChart.update();
+        }
+
+        function updateMetricsTable() {
+            const table = document.getElementById('metricsTable');
+            
+            const totalSales = currentData.sales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalCustomers = currentData.customers.length;
+            const totalLeads = currentData.leads.length;
+            const convertedLeads = currentData.leads.filter(lead => lead.status === 'Convertido').length;
+            const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+
+            const metrics = [
+                {
+                    name: 'Tasa de Conversión',
+                    current: `${conversionRate}%`,
+                    target: '35%',
+                    progress: Math.min(Math.round((conversionRate / 35) * 100), 100),
+                    trend: conversionRate >= 30 ? 5.1 : -2.3
+                },
+                {
+                    name: 'Ventas Mensuales',
+                    current: `$${totalSales.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                    target: '$150,000',
+                    progress: Math.min(Math.round((totalSales / 150000) * 100), 100),
+                    trend: totalSales >= 100000 ? 12.5 : -3.2
+                },
+                {
+                    name: 'Nuevos Clientes',
+                    current: totalCustomers,
+                    target: '100',
+                    progress: Math.min(Math.round((totalCustomers / 100) * 100), 100),
+                    trend: totalCustomers >= 50 ? 8.3 : -1.5
+                },
+                {
+                    name: 'ROI de Marketing',
+                    current: '4.2x',
+                    target: '5x',
+                    progress: 84,
+                    trend: -0.3
+                }
+            ];
+
+            table.innerHTML = metrics.map(metric => `
+                <tr>
+                    <td>${metric.name}</td>
+                    <td>${metric.current}</td>
+                    <td>${metric.target}</td>
+                    <td>
+                        <div style="background: var(--gray-200); height: 8px; border-radius: 4px; width: 100%;">
+                            <div style="background: ${metric.progress >= 80 ? 'var(--secondary)' : metric.progress >= 60 ? 'var(--primary)' : 'var(--warning)'}; 
+                                        height: 100%; width: ${metric.progress}%; border-radius: 4px;"></div>
+                        </div>
+                        <div style="font-size: 12px; margin-top: 4px;">${metric.progress}%</div>
+                    </td>
+                    <td class="${metric.trend >= 0 ? 'positive' : 'negative'}">
+                        <i class="fas fa-arrow-${metric.trend >= 0 ? 'up' : 'down'}"></i>
+                        ${Math.abs(metric.trend)}${metric.name.includes('ROI') ? 'x' : '%'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ============================================
+        // FUNCIONES DE EXPORTACIÓN PDF
+        // ============================================
+
+        function exportTableToPDF(type, filename) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(20);
+            doc.text(`Reporte de ${type.charAt(0).toUpperCase() + type.slice(1)}`, 14, 22);
+            doc.setFontSize(11);
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 14, 30);
+            
+            // Obtener datos
+            let data = [];
+            let headers = [];
+            
+            switch(type) {
+                case 'sales':
+                    headers = [['ID', 'Cliente', 'Producto', 'Monto', 'Estado', 'Fecha']];
+                    data = currentData.sales.map(sale => [
+                        `#${sale.id.toString().padStart(3, '0')}`,
+                        sale.customerName,
+                        sale.productName,
+                        `$${sale.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                        sale.status,
+                        formatDate(sale.date)
+                    ]);
+                    break;
+                case 'customers':
+                    headers = [['Nombre', 'Email', 'Teléfono', 'Estado', 'Total Compras', 'Última Compra']];
+                    data = currentData.customers.map(customer => [
+                        `${customer.name} ${customer.lastName}`,
+                        customer.email,
+                        customer.phone,
+                        customer.status,
+                        `$${customer.totalPurchases.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                        formatDate(customer.lastPurchase)
+                    ]);
+                    break;
+                case 'products':
+                    headers = [['Producto', 'Categoría', 'Precio', 'Stock', 'Estado', 'Ventas']];
+                    data = currentData.products.map(product => [
+                        product.name,
+                        product.category,
+                        `$${product.price.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                        product.stock,
+                        product.status,
+                        product.salesCount || 0
+                    ]);
+                    break;
+                case 'leads':
+                    headers = [['Nombre', 'Email', 'Empresa', 'Estado', 'Valor', 'Fuente']];
+                    data = currentData.leads.map(lead => [
+                        `${lead.name} ${lead.lastName}`,
+                        lead.email,
+                        lead.company,
+                        lead.status,
+                        `$${lead.value.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                        lead.source
+                    ]);
+                    break;
+            }
+            
+            // Crear tabla
+            doc.autoTable({
+                head: headers,
+                body: data,
+                startY: 40,
+                theme: 'striped',
+                headStyles: { fillColor: [79, 70, 229] },
+                margin: { top: 40 }
+            });
+            
+            // Estadísticas
+            const finalY = doc.lastAutoTable.finalY || 40;
+            doc.setFontSize(12);
+            doc.text(`Total registros: ${data.length}`, 14, finalY + 20);
+            
+            // Guardar PDF
+            doc.save(filename);
+            showNotification(`PDF exportado: ${filename}`);
+        }
+
+        function exportChartAsPDF(chartId, filename) {
+            const chartCanvas = document.getElementById(chartId);
+            const chartImage = chartCanvas.toDataURL('image/png');
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(20);
+            const title = chartId === 'salesChart' ? 'Gráfico de Ventas Mensuales' : 'Gráfico de Ventas por Producto';
+            doc.text(title, 14, 22);
+            doc.setFontSize(11);
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 14, 30);
+            
+            // Añadir imagen del gráfico
+            doc.addImage(chartImage, 'PNG', 14, 40, 180, 100);
+            
+            // Añadir datos adicionales
+            doc.setFontSize(12);
+            doc.text('Resumen:', 14, 155);
+            doc.setFontSize(10);
+            
+            let summary = [];
+            if (chartId === 'salesChart') {
+                const totalSales = currentData.sales.reduce((sum, sale) => sum + sale.total, 0);
+                const avgSale = currentData.sales.length > 0 ? totalSales / currentData.sales.length : 0;
+                summary = [
+                    `Total Ventas: $${totalSales.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                    `Ventas Promedio: $${avgSale.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                    `Cantidad de Ventas: ${currentData.sales.length}`
+                ];
+            } else {
+                const productSales = {};
+                currentData.sales.forEach(sale => {
+                    const product = currentData.products.find(p => p.id === sale.productId);
+                    if (product) {
+                        if (!productSales[product.name]) productSales[product.name] = 0;
+                        productSales[product.name] += sale.total;
+                    }
+                });
+                
+                const topProduct = Object.entries(productSales).sort((a, b) => b[1] - a[1])[0];
+                if (topProduct) {
+                    summary = [
+                        `Producto Más Vendido: ${topProduct[0]}`,
+                        `Total en Ventas: $${topProduct[1].toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                        `Cantidad de Productos: ${Object.keys(productSales).length}`
+                    ];
+                }
+            }
+            
+            summary.forEach((line, index) => {
+                doc.text(line, 14, 165 + (index * 7));
+            });
+            
+            doc.save(filename);
+            showNotification(`Gráfico exportado como PDF: ${filename}`);
+        }
+
+        function generateSalesReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título y fecha
+            doc.setFontSize(24);
+            doc.text('Reporte Completo de Ventas', 14, 22);
+            doc.setFontSize(12);
+            doc.text(`Período: ${new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`, 14, 32);
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 14, 40);
+            
+            // Estadísticas principales
+            doc.setFontSize(16);
+            doc.text('Estadísticas Principales', 14, 55);
+            doc.setFontSize(11);
+            
+            const totalSales = currentData.sales.reduce((sum, sale) => sum + sale.total, 0);
+            const avgSale = currentData.sales.length > 0 ? totalSales / currentData.sales.length : 0;
+            const totalCustomers = currentData.customers.length;
+            const activeCustomers = currentData.customers.filter(c => c.status === 'Activo').length;
+            
+            const stats = [
+                `Ventas Totales: $${totalSales.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                `Promedio por Venta: $${avgSale.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                `Total de Clientes: ${totalCustomers}`,
+                `Clientes Activos: ${activeCustomers}`,
+                `Tasa de Actividad: ${totalCustomers > 0 ? Math.round((activeCustomers / totalCustomers) * 100) : 0}%`
+            ];
+            
+            stats.forEach((stat, index) => {
+                doc.text(stat, 14, 65 + (index * 7));
+            });
+            
+            // Tabla de ventas recientes
+            doc.setFontSize(16);
+            doc.text('Ventas Recientes', 14, 105);
+            
+            const recentSales = currentData.sales.slice(0, 10).map(sale => [
+                `#${sale.id.toString().padStart(3, '0')}`,
+                sale.customerName,
+                sale.productName,
+                `$${sale.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                sale.status,
+                formatDate(sale.date)
+            ]);
+            
+            doc.autoTable({
+                head: [['ID', 'Cliente', 'Producto', 'Monto', 'Estado', 'Fecha']],
+                body: recentSales,
+                startY: 110,
+                theme: 'striped',
+                headStyles: { fillColor: [79, 70, 229] }
+            });
+            
+            // Gráficos
+            const finalY = doc.lastAutoTable.finalY || 110;
+            
+            // Exportar gráfico de ventas
+            const salesChartImage = document.getElementById('salesChart').toDataURL('image/png');
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text('Gráfico de Ventas Mensuales', 14, 22);
+            doc.addImage(salesChartImage, 'PNG', 14, 30, 180, 80);
+            
+            // Exportar gráfico de productos
+            const productsChartImage = document.getElementById('productsChart').toDataURL('image/png');
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text('Gráfico de Ventas por Producto', 14, 22);
+            doc.addImage(productsChartImage, 'PNG', 14, 30, 180, 80);
+            
+            // Análisis por categoría
+            const categories = {};
+            currentData.sales.forEach(sale => {
+                const product = currentData.products.find(p => p.id === sale.productId);
+                if (product) {
+                    if (!categories[product.category]) {
+                        categories[product.category] = { total: 0, count: 0 };
+                    }
+                    categories[product.category].total += sale.total;
+                    categories[product.category].count++;
+                }
+            });
+            
+            const categoryData = Object.entries(categories).map(([category, data]) => [
+                category,
+                `$${data.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+                data.count,
+                `$${(data.total / data.count).toLocaleString('es-ES', { minimumFractionDigits: 2 })}`
+            ]);
+            
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text('Análisis por Categoría', 14, 22);
+            doc.autoTable({
+                head: [['Categoría', 'Total Ventas', 'Cantidad', 'Promedio']],
+                body: categoryData,
+                startY: 30,
+                theme: 'striped',
+                headStyles: { fillColor: [16, 185, 129] }
+            });
+            
+            // Guardar PDF
+            doc.save('Reporte_Completo_Ventas.pdf');
+            showNotification('Reporte completo exportado como PDF');
+        }
+
+        function generateSaleReceipt(saleId) {
+            const sale = currentData.sales.find(s => s.id === saleId);
+            if (!sale) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Encabezado
+            doc.setFontSize(24);
+            doc.text('RECIBO DE VENTA', 105, 22, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.text('Ventas Pro - Sistema de Gestión', 105, 32, { align: 'center' });
+            doc.text('www.ventaspro.com', 105, 38, { align: 'center' });
+            
+            // Línea separadora
+            doc.setLineWidth(0.5);
+            doc.line(14, 45, 196, 45);
+            
+            // Información del recibo
+            doc.setFontSize(10);
+            doc.text(`Recibo #: ${sale.id.toString().padStart(6, '0')}`, 14, 55);
+            doc.text(`Fecha: ${formatDate(sale.date)}`, 14, 62);
+            doc.text(`Estado: ${sale.status}`, 14, 69);
+            
+            // Información del cliente
+            doc.setFontSize(12);
+            doc.text('Cliente:', 14, 85);
+            doc.setFontSize(10);
+            doc.text(`Nombre: ${sale.customerName}`, 20, 92);
+            
+            // Detalles de la venta
+            doc.setFontSize(12);
+            doc.text('Detalles de la Venta:', 14, 110);
+            
+            const tableData = [
+                ['Producto', 'Cantidad', 'Precio Unitario', 'Total'],
+                [sale.productName, sale.quantity.toString(), `$${sale.price.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`, `$${sale.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`]
+            ];
+            
+            doc.autoTable({
+                body: tableData,
+                startY: 115,
+                theme: 'plain',
+                styles: { fontSize: 10 },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    1: { cellWidth: 30 },
+                    2: { cellWidth: 40 },
+                    3: { cellWidth: 40 }
+                }
+            });
+            
+            // Totales
+            const finalY = doc.lastAutoTable.finalY || 115;
+            doc.setFontSize(12);
+            doc.text('Total:', 150, finalY + 15);
+            doc.setFontSize(14);
+            doc.text(`$${sale.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`, 170, finalY + 15, { align: 'right' });
+            
+            // Notas
+            if (sale.notes) {
+                doc.setFontSize(10);
+                doc.text('Notas:', 14, finalY + 35);
+                doc.text(sale.notes, 14, finalY + 42, { maxWidth: 180 });
+            }
+            
+            // Pie de página
+            doc.setFontSize(9);
+            doc.text('Gracias por su compra', 105, 280, { align: 'center' });
+            doc.text('Este es un recibo generado automáticamente', 105, 285, { align: 'center' });
+            
+            // Guardar PDF
+            doc.save(`Recibo_${sale.id.toString().padStart(6, '0')}.pdf`);
+            showNotification('Recibo generado como PDF');
+        }
+
+        function exportAnalyticsPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(24);
+            doc.text('Reporte de Análisis', 105, 22, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 105, 30, { align: 'center' });
+            
+            // Gráfico de conversión
+            const conversionChartImage = document.getElementById('conversionChart').toDataURL('image/png');
+            doc.addImage(conversionChartImage, 'PNG', 14, 40, 180, 80);
+            doc.setFontSize(11);
+            doc.text('Análisis de Conversión de Leads', 14, 125);
+            
+            // Datos de conversión
+            const leadsByStatus = {
+                'Nuevo': currentData.leads.filter(l => l.status === 'Nuevo').length,
+                'En Progreso': currentData.leads.filter(l => l.status === 'En Progreso').length,
+                'Calificado': currentData.leads.filter(l => l.status === 'Calificado').length,
+                'Convertido': currentData.leads.filter(l => l.status === 'Convertido').length
+            };
+            
+            const totalLeads = currentData.leads.length;
+            const conversionRate = totalLeads > 0 ? 
+                Math.round((leadsByStatus['Convertido'] / totalLeads) * 100) : 0;
+            
+            doc.setFontSize(10);
+            doc.text(`Total Leads: ${totalLeads}`, 14, 135);
+            doc.text(`Tasa de Conversión: ${conversionRate}%`, 14, 142);
+            doc.text(`Leads Nuevos: ${leadsByStatus['Nuevo']}`, 14, 149);
+            doc.text(`Leads en Progreso: ${leadsByStatus['En Progreso']}`, 14, 156);
+            doc.text(`Leads Calificados: ${leadsByStatus['Calificado']}`, 14, 163);
+            doc.text(`Leads Convertidos: ${leadsByStatus['Convertido']}`, 14, 170);
+            
+            // Gráfico de tendencias
+            const trendChartImage = document.getElementById('trendChart').toDataURL('image/png');
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text('Tendencia de Ventas y Clientes', 14, 22);
+            doc.addImage(trendChartImage, 'PNG', 14, 30, 180, 80);
+            
+            // Análisis de tendencia
+            const lastMonthSales = getLastMonthSales();
+            const salesGrowth = calculateGrowth(lastMonthSales);
+            
+            doc.setFontSize(11);
+            doc.text('Análisis de Tendencia:', 14, 125);
+            doc.setFontSize(10);
+            doc.text(`Crecimiento de Ventas: ${salesGrowth >= 0 ? '+' : ''}${salesGrowth}%`, 14, 135);
+            doc.text(`Tendencia: ${salesGrowth >= 0 ? 'Positiva' : 'Negativa'}`, 14, 142);
+            
+            // Recomendaciones
+            doc.setFontSize(11);
+            doc.text('Recomendaciones:', 14, 155);
+            doc.setFontSize(10);
+            
+            const recommendations = [];
+            if (conversionRate < 30) {
+                recommendations.push('• Mejorar proceso de seguimiento de leads');
+            }
+            if (salesGrowth < 5) {
+                recommendations.push('• Implementar nuevas estrategias de ventas');
+            }
+            if (leadsByStatus['Nuevo'] > 10) {
+                recommendations.push('• Priorizar atención a leads nuevos');
+            }
+            
+            if (recommendations.length === 0) {
+                recommendations.push('• Excelente rendimiento, mantener estrategias actuales');
+            }
+            
+            recommendations.forEach((rec, index) => {
+                doc.text(rec, 14, 165 + (index * 7));
+            });
+            
+            doc.save('Analisis_Estrategico.pdf');
+            showNotification('Análisis estratégico exportado como PDF');
+        }
+
+        // ============================================
+        // FUNCIONES UTILITARIAS
+        // ============================================
+
+        function generateId(type) {
+            const items = currentData[type];
+            if (items.length === 0) return 1;
+            return Math.max(...items.map(item => item.id)) + 1;
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Completada':
+                case 'Activo':
+                case 'Convertido':
+                    return 'status-success';
+                case 'Pendiente':
+                case 'En Progreso':
+                    return 'status-warning';
+                case 'Cancelada':
+                case 'Inactivo':
+                    return 'status-danger';
+                case 'Nuevo':
+                case 'Calificado':
+                    return 'status-info';
+                default:
+                    return 'status-info';
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notificationMessage');
+            const icon = notification.querySelector('i');
+            
+            messageElement.textContent = message;
+            
+            // Configurar icono y color según tipo
+            switch(type) {
+                case 'success':
+                    notification.className = 'notification success';
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = 'var(--secondary)';
+                    break;
+                case 'error':
+                    notification.className = 'notification error';
+                    icon.className = 'fas fa-exclamation-circle';
+                    icon.style.color = 'var(--danger)';
+                    break;
+                case 'info':
+                    notification.className = 'notification info';
+                    icon.className = 'fas fa-info-circle';
+                    icon.style.color = 'var(--info)';
+                    break;
+            }
+            
+            notification.classList.add('active');
+            
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+
+        function applyFilters() {
+            loadSalesTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFrom').value = getFirstDayOfMonth();
+            document.getElementById('dateTo').value = new Date().toISOString().split('T')[0];
+            loadSalesTable();
+        }
+
+        function searchCustomers() {
+            loadCustomersTable();
+        }
+
+        function filterLeads() {
+            loadLeadsTable();
+        }
+
+        function updateMetrics() {
+            updateMetricsTable();
+            showNotification('Métricas actualizadas');
+        }
+
+        function getFirstDayOfMonth() {
+            const date = new Date();
+            return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
+        }
+
+        function getCategoryTrend(sales) {
+            if (sales.length < 2) return 0;
+            
+            const sortedSales = [...sales].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const firstHalf = sortedSales.slice(0, Math.floor(sortedSales.length / 2));
+            const secondHalf = sortedSales.slice(Math.floor(sortedSales.length / 2));
+            
+            const firstTotal = firstHalf.reduce((sum, sale) => sum + sale.total, 0);
+            const secondTotal = secondHalf.reduce((sum, sale) => sum + sale.total, 0);
+            
+            if (firstTotal === 0) return secondTotal > 0 ? 100 : 0;
+            
+            return Math.round(((secondTotal - firstTotal) / firstTotal) * 100);
+        }
+
+        function getLastMonthSales() {
+            const now = new Date();
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            return currentData.sales
+                .filter(sale => {
+                    const saleDate = new Date(sale.date);
+                    return saleDate >= lastMonth && saleDate < thisMonth;
+                })
+                .reduce((sum, sale) => sum + sale.total, 0);
+        }
+
+        function calculateGrowth(lastMonthSales) {
+            const thisMonthSales = currentData.sales
+                .filter(sale => {
+                    const saleDate = new Date(sale.date);
+                    const now = new Date();
+                    return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+                })
+                .reduce((sum, sale) => sum + sale.total, 0);
+            
+            if (lastMonthSales === 0) return thisMonthSales > 0 ? 100 : 0;
+            
+            return Math.round(((thisMonthSales - lastMonthSales) / lastMonthSales) * 100);
+        }
+
+        function exportAllData() {
+            const dataStr = JSON.stringify(currentData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `ventas_pro_backup_${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('Base de datos exportada exitosamente');
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        currentData = importedData;
+                        saveData();
+                        refreshAllData();
+                        showNotification('Datos importados exitosamente');
+                    } catch (error) {
+                        showNotification('Error al importar datos. Formato inválido.', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        function saveSettings() {
+            showNotification('Configuración guardada exitosamente');
+        }
+
+        function exportCategoryReport() {
+            exportTableToPDF('products', 'Reporte_Categorias.pdf');
+        }
+
+        // ============================================
+        // ASIGNAR FUNCIONES AL SCOPE GLOBAL
+        // ============================================
+
+        window.openModal = (modalId) => openModal(modalId);
+        window.closeModal = closeModal;
+        window.saveSale = saveSale;
+        window.saveCustomer = saveCustomer;
+        window.saveProduct = saveProduct;
+        window.saveLead = saveLead;
+        window.editSale = editSale;
+        window.editCustomer = editCustomer;
+        window.editProduct = editProduct;
+        window.editLead = editLead;
+        window.deleteSale = deleteSale;
+        window.deleteCustomer = deleteCustomer;
+        window.deleteProduct = deleteProduct;
+        window.deleteLead = deleteLead;
+        window.convertLead = convertLead;
+        window.applyFilters = applyFilters;
+        window.resetFilters = resetFilters;
+        window.searchCustomers = searchCustomers;
+        window.filterLeads = filterLeads;
+        window.updateMetrics = updateMetrics;
+        window.exportTableToPDF = exportTableToPDF;
+        window.exportChartAsPDF = exportChartAsPDF;
+        window.generateSalesReportPDF = generateSalesReportPDF;
+        window.generateSaleReceipt = generateSaleReceipt;
+        window.exportAnalyticsPDF = exportAnalyticsPDF;
+        window.exportCategoryReport = exportCategoryReport;
+        window.exportAllData = exportAllData;
+        window.importData = importData;
+        window.saveSettings = saveSettings;
+        window.updateDashboardCharts = updateDashboardCharts;
+        window.updateConversionChart = updateConversionChart;
+    </script>
+</body>
+</html>
